@@ -1,8 +1,10 @@
 import { Queue } from "bullmq";
-import Redis from "ioredis";
+import IORedis from "ioredis";
 
-const connection = new Redis(process.env.REDIS_URL!, {
+const connection = new IORedis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  lazyConnect: true,
 });
 
 export const analyticsQueue = new Queue("analytics", {
