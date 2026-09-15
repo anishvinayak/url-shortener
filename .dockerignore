@@ -1,0 +1,25 @@
+node_modules
+.next
+.git
+.env
+
+# IDE / AI folders
+.cursor
+.claude
+.devin
+.agents
+.vscode
+
+# Build output
+dist
+coverage
+
+# Prisma generated client
+generated
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

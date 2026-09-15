@@ -1,0 +1,71 @@
+services:
+  # ---------- Development Infrastructure ----------
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: shortener
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ---------- API Instance 1 ----------
+  api1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/shortener
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - postgres
+
+  # ---------- API Instance 2 ----------
+  api2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/shortener
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - postgres
+
+  # ---------- BullMQ Worker ----------
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bun run worker
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/shortener
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - postgres
+
+  # ---------- Load Balancer ----------
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api1
+      - api2
+
+volumes:
+  postgres_data:
