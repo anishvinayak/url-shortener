@@ -19,7 +19,7 @@ export default function Navbar() {
         </div>
 
         <a
-          href="https://github.com/yourusername/snaplink"
+          href="https://github.com/anishvinayak/url-shortener"
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-lg border border-zinc-800 p-2 text-zinc-300 transition hover:border-blue-500 hover:text-white"

@@ -1,8 +1,11 @@
 import "dotenv/config";
 import { Worker } from "bullmq";
-
+import Redis from "ioredis";
 import { db } from "@/lib/db";
-import { configDotenv } from "dotenv";
+
+const connection = new Redis(process.env.REDIS_URL!, {
+  maxRetriesPerRequest: null,
+});
 
 const worker = new Worker(
   "analytics",
@@ -10,9 +13,7 @@ const worker = new Worker(
     const { shortCode } = job.data;
 
     await db.url.update({
-      where: {
-        shortCode,
-      },
+      where: { shortCode },
       data: {
         clicks: {
           increment: 1,
@@ -22,18 +23,5 @@ const worker = new Worker(
 
     console.log(`Processed click for ${shortCode}`);
   },
-  {
-    connection: {
-      host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_PORT),
-    },
-  }
+  { connection }
 );
-
-worker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed`);
-});
-
-worker.on("failed", (job, err) => {
-  console.error(`Job ${job?.id} failed`, err);
-});

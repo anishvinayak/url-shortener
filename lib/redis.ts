@@ -6,9 +6,7 @@ const globalForRedis = globalThis as {
 
 export const redis =
   globalForRedis.redis ??
-  new Redis({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
+  new Redis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null,
   });
 
