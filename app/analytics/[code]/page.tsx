@@ -19,15 +19,24 @@ interface AnalyticsData {
 async function getAnalytics(code: string): Promise<AnalyticsData> {
   const h = await headers();
   const host = h.get("host");
-  const protocol =
-    process.env.NODE_ENV === "production" ? "https" : "http";
+
+  if (!host) {
+    throw new Error("Host header not found");
+  }
+
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
 
   const res = await fetch(`${protocol}://${host}/api/analytics/${code}`, {
     cache: "no-store",
   });
 
-  if (res.status === 404) notFound();
-  if (!res.ok) throw new Error("Failed to fetch analytics");
+  if (res.status === 404) {
+    notFound();
+  }
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch analytics");
+  }
 
   return res.json();
 }
@@ -41,13 +50,12 @@ export default async function AnalyticsPage({
   const data = await getAnalytics(code);
 
   const h = await headers();
-  const host = h.get("host");
-  const protocol =
-    process.env.NODE_ENV === "production" ? "https" : "http";
+  const host = h.get("host")!;
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
   const shortUrl = `${protocol}://${host}/${data.shortCode}`;
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white px-6 py-10">
+    <main className="min-h-screen bg-zinc-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10">
           <h1 className="text-4xl font-bold">URL Analytics</h1>
@@ -61,7 +69,9 @@ export default async function AnalyticsPage({
             <div className="mb-4 inline-flex rounded-xl bg-blue-500/10 p-3 text-blue-400">
               <MousePointerClick className="h-6 w-6" />
             </div>
+
             <p className="text-sm text-zinc-400">Total Clicks</p>
+
             <h2 className="mt-2 text-4xl font-bold">{data.clicks}</h2>
           </div>
 
@@ -69,7 +79,9 @@ export default async function AnalyticsPage({
             <div className="mb-4 inline-flex rounded-xl bg-blue-500/10 p-3 text-blue-400">
               <CalendarDays className="h-6 w-6" />
             </div>
+
             <p className="text-sm text-zinc-400">Created</p>
+
             <h2 className="mt-2 text-xl font-semibold">
               {new Date(data.createdAt).toLocaleString()}
             </h2>
@@ -82,6 +94,7 @@ export default async function AnalyticsPage({
               <Link2 className="h-5 w-5 text-blue-400" />
               <h3 className="text-lg font-semibold">Short URL</h3>
             </div>
+
             <a
               href={shortUrl}
               target="_blank"
@@ -97,6 +110,7 @@ export default async function AnalyticsPage({
               <ExternalLink className="h-5 w-5 text-blue-400" />
               <h3 className="text-lg font-semibold">Original URL</h3>
             </div>
+
             <a
               href={data.originalUrl}
               target="_blank"
