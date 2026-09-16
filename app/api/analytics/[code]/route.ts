@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET(
-  request: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
@@ -24,7 +24,7 @@ export async function GET(
 
     if (!url) {
       return NextResponse.json(
-        { error: "Short URL not found" },
+        { error: "URL not found." },
         { status: 404 }
       );
     }
@@ -34,7 +34,7 @@ export async function GET(
     console.error("Analytics API Error:", error);
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal Server Error." },
       { status: 500 }
     );
   }
