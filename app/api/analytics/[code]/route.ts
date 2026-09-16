@@ -1,37 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
+export const runtime = "nodejs";
+
 export async function GET(
-  req: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ code: string }> }
 ) {
-  const { code } = await params;
-
   try {
+    const { code } = await params;
+
     const url = await db.url.findUnique({
       where: {
         shortCode: code,
+      },
+      select: {
+        shortCode: true,
+        originalUrl: true,
+        clicks: true,
+        createdAt: true,
       },
     });
 
     if (!url) {
       return NextResponse.json(
-        { error: "URL not found." },
+        { error: "Short URL not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
-      shortCode: url.shortCode,
-      originalUrl: url.originalUrl,
-      clicks: url.clicks,
-      createdAt: url.createdAt,
-    });
+    return NextResponse.json(url);
   } catch (error) {
-    console.error(error);
+    console.error("Analytics API Error:", error);
 
     return NextResponse.json(
-      { error: "Internal Server Error." },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
